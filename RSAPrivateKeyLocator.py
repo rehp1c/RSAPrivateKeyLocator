@@ -480,9 +480,14 @@ class DecryptionWindow(QWidget):
         )
         if file_path:
             try:
-                with open(file_path, 'r') as f:
-                    content = f.read()
-                self.cipher_text.setPlainText(content)
+                if self.format_combo.currentText() == "二进制":
+                    with open(file_path, 'rb') as f:
+                        content = f.read()
+                    self.cipher_text.setPlainText(content.hex())
+                else:
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                    self.cipher_text.setPlainText(content)
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"读取文件失败: {e}")
 
@@ -550,7 +555,7 @@ class DecryptionWindow(QWidget):
             elif format_type == "Hex":
                 encrypted_data = bytes.fromhex(cipher_text)
             else:  # 二进制格式
-                encrypted_data = cipher_text.encode('utf-8')
+                encrypted_data = bytes.fromhex(cipher_text)
 
             # 加载私钥
             with open(self.private_key_path, "rb") as key_file:
@@ -657,6 +662,7 @@ class MainWindow(QMainWindow):
         self.decrypt_threads = []
         self.decrypt_results = []  # 存储解密结果
         self.best_key = None  # 最佳私钥路径
+        self.decrypt_completed_count = 0  # 记录完成的解密线程数量
 
     def center(self):
         """居中窗口"""
@@ -1149,7 +1155,7 @@ class MainWindow(QMainWindow):
 
         self.best_key = best_result["private_key_path"]
         self.best_file_type = best_result["file_type"]
-        # self.decrypt_status_label.setText(f"最佳匹配私钥: {self.best_key}, 文件类型: {best_result['file_type']}")
+        self.result_output = best_result['result_output']
 
     def on_decrypt_error(self, error_msg):
         """处理解密错误"""
@@ -1158,16 +1164,24 @@ class MainWindow(QMainWindow):
 
     def on_decrypt_finished(self):
         """所有解密线程完成"""
-        all_finished = all(not thread.isRunning()
-                           for thread in self.decrypt_threads)
-        if all_finished:
+        self.decrypt_completed_count += 1
+        if self.decrypt_completed_count == len(self.decrypt_threads):
             self.decrypt_status_label.setText("解密尝试完成")
             self.decrypt_progress_bar.setVisible(False)
-
             # 显示最佳私钥
             if self.best_key:
+                self.decrypt_result_text.append("\n" + "="*50 + "\n")
+                self.decrypt_result_text.append(f"最佳匹配私钥: {self.best_key}\n")
                 self.decrypt_result_text.append(
-                    f"最佳匹配私钥: {self.best_key}, 文件类型: {self.best_file_type}")
+                    f"文件类型: {self.best_file_type}\n")
+                self.decrypt_result_text.append(
+                    f"解密结果: {self.result_output}\n")
+            else:
+                self.decrypt_result_text.append("\n" + "="*50 + "\n")
+                self.decrypt_result_text.append("未找到最佳匹配私钥，请检查加密文件或私钥目录。")
+
+            # 重置计数器
+            self.decrypt_completed_count = 0
 
     def update_progress(self, value):
         """更新进度条"""
