@@ -1,10 +1,10 @@
 # RSAPrivateKeyLocator
 
-RSAPrivateKeyLocator 用于在指定目录中查找与给定公钥匹配的私钥文件，并提供RSA解密功能。方便快速定位加密公钥对应私钥文件。
+RSAPrivateKeyLocator 用于在指定目录中查找与给定公钥匹配的私钥文件或加密文件匹配的私钥文件，并提供RSA解密功能。方便快速定位加密公钥对应私钥文件。
 
 ## 功能特点
 
-- 🔍 **自动私钥查找**：在指定目录中递归搜索与公钥匹配的私钥文件
+- 🔍 **自动私钥查找**：在指定目录中递归搜索与公钥或加密文件匹配的私钥文件
 - 🔑 **手动私钥导入**：支持直接导入私钥文件进行解密操作
 - 🔓 **RSA解密功能**：使用找到的私钥解密加密数据
 - 📦 **多种填充方案支持**：支持OAEP-SHA-256、OAEP-SHA-1、PKCS#1 v1.5等多种填充方案
@@ -79,3 +79,4 @@ python RSAPrivateKeyLocator.py
 - [cryptography](https://pypi.org/project/cryptography/)- 提供加密功能
 
 - 所有贡献者和用户
+
